@@ -1,4 +1,3 @@
-<% autogen_exception -%>
 package dataproc
 
 import (
@@ -167,7 +166,7 @@ func ResourceDataprocCluster() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			tpgresource.DefaultProviderProject,
 		),
-<% if version == 'private' -%>
+
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
@@ -176,7 +175,6 @@ func ResourceDataprocCluster() *schema.Resource {
 				Version: 0,
 			},
 		},
-<% end -%>
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -230,31 +228,19 @@ func ResourceDataprocCluster() *schema.Resource {
 				Description: `The timeout duration which allows graceful decomissioning when you change the number of worker nodes directly through a terraform apply`,
 			},
 
-<% if version == "private" -%>
 			"labels": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: `The list of labels (key/value pairs) to be applied to instances in the cluster. GCP generates some itself including goog-dataproc-cluster-name which is the name of the cluster.`,
 			},
 
 			"effective_labels": {
-				Type:     schema.TypeMap,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeMap,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 				Description: `The list of labels (key/value pairs) to be applied to instances in the cluster. GCP generates some itself including goog-dataproc-cluster-name which is the name of the cluster.`,
 			},
-<% else -%>
-			"labels": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				// GCP automatically adds labels
-				DiffSuppressFunc: resourceDataprocLabelDiffSuppress,
-				Computed:         true,
-				Description:      `The list of labels (key/value pairs) to be applied to instances in the cluster. GCP generates some itself including goog-dataproc-cluster-name which is the name of the cluster.`,
-			},
-<% end -%>
 
 			"virtual_cluster_config": {
 				Type:        schema.TypeList,
@@ -728,10 +714,10 @@ func ResourceDataprocCluster() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"node_group_uri": {
-													Type:         schema.TypeString,
-													ForceNew:     true,
-													Required:     true,
-													Description:  `The URI of a sole-tenant that the cluster will be created on.`,
+													Type:             schema.TypeString,
+													ForceNew:         true,
+													Required:         true,
+													Description:      `The URI of a sole-tenant that the cluster will be created on.`,
 													DiffSuppressFunc: tpgresource.CompareSelfLinkOrResourceName,
 												},
 											},
@@ -770,8 +756,8 @@ func ResourceDataprocCluster() *schema.Resource {
 									// "machine_type": { ... }
 									// "min_cpu_platform": { ... }
 									"preemptibility": {
-										Type:		 schema.TypeString,
-										Optional: 	 true,
+										Type:        schema.TypeString,
+										Optional:    true,
 										Description: `Specifies the preemptibility of the secondary nodes. Defaults to PREEMPTIBLE.`,
 										AtLeastOneOf: []string{
 											"cluster_config.0.preemptible_worker_config.0.num_instances",
@@ -1052,22 +1038,22 @@ by Dataproc`,
 							},
 						},
 						"metastore_config": {
-							Type:             schema.TypeList,
-							Optional:         true,
-							AtLeastOneOf:     clusterConfigKeys,
-							MaxItems:         1,
-							Description:      `Specifies a Metastore configuration.`,
+							Type:         schema.TypeList,
+							Optional:     true,
+							AtLeastOneOf: clusterConfigKeys,
+							MaxItems:     1,
+							Description:  `Specifies a Metastore configuration.`,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"dataproc_metastore_service": {
-										Type:             schema.TypeString,
-										Required:         true,
-										ForceNew:         true,
-										Description:      `Resource name of an existing Dataproc Metastore service.`,
+										Type:        schema.TypeString,
+										Required:    true,
+										ForceNew:    true,
+										Description: `Resource name of an existing Dataproc Metastore service.`,
 									},
 								},
 							},
-						},						
+						},
 						"lifecycle_config": {
 							Type:         schema.TypeList,
 							Optional:     true,
@@ -1132,18 +1118,18 @@ by Dataproc`,
 						},
 
 						"dataproc_metric_config": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							MaxItems:    1,
-							Description: `The config for Dataproc metrics.`,
+							Type:         schema.TypeList,
+							Optional:     true,
+							MaxItems:     1,
+							Description:  `The config for Dataproc metrics.`,
 							AtLeastOneOf: clusterConfigKeys,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"metrics": {
-										Type:         schema.TypeList,
-										Required:     true,
-										Description:  `Metrics sources to enable.`,
-										Elem:         metricsSchema(),
+										Type:        schema.TypeList,
+										Required:    true,
+										Description: `Metrics sources to enable.`,
+										Elem:        metricsSchema(),
 									},
 								},
 							},
@@ -1158,7 +1144,7 @@ by Dataproc`,
 
 // We need to pull metrics' schema out so we can use it to make a set hash func
 func metricsSchema() *schema.Resource {
-	return  &schema.Resource{
+	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"metric_source": {
 				Type:         schema.TypeString,
@@ -1168,11 +1154,11 @@ func metricsSchema() *schema.Resource {
 				Description:  `A source for the collection of Dataproc OSS metrics (see [available OSS metrics] (https://cloud.google.com//dataproc/docs/guides/monitoring#available_oss_metrics)).`,
 			},
 			"metric_overrides": {
-				Type:         schema.TypeSet,
-				Elem:         &schema.Schema{Type: schema.TypeString},
-				Optional:     true,
-				ForceNew:     true,
-				Description:  `Specify one or more [available OSS metrics] (https://cloud.google.com/dataproc/docs/guides/monitoring#available_oss_metrics) to collect.`,
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				ForceNew:    true,
+				Description: `Specify one or more [available OSS metrics] (https://cloud.google.com/dataproc/docs/guides/monitoring#available_oss_metrics) to collect.`,
 			},
 		},
 	}
@@ -1279,8 +1265,8 @@ func instanceConfigSchema(parent string) *schema.Schema {
 									"cluster_config.0." + parent + ".0.disk_config.0.boot_disk_size_gb",
 									"cluster_config.0." + parent + ".0.disk_config.0.boot_disk_type",
 								},
-								ForceNew:     true,
-								Default:      "pd-standard",
+								ForceNew: true,
+								Default:  "pd-standard",
 							},
 						},
 					},
@@ -1330,7 +1316,7 @@ func acceleratorsSchema() *schema.Resource {
 
 func resourceDataprocClusterCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*transport_tpg.Config)
-	userAgent, err :=  tpgresource.GenerateUserAgentString(d, config.UserAgent)
+	userAgent, err := tpgresource.GenerateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return err
 	}
@@ -1861,7 +1847,7 @@ func expandDataprocMetricConfig(cfg map[string]interface{}) *dataproc.DataprocMe
 	for _, raw := range metricsConfigs {
 		data := raw.(map[string]interface{})
 		metric := dataproc.Metric{
-			MetricSource: data["metric_source"].(string),
+			MetricSource:    data["metric_source"].(string),
 			MetricOverrides: tpgresource.ConvertStringSet(data["metric_overrides"].(*schema.Set)),
 		}
 		metricsSet = append(metricsSet, &metric)
@@ -1980,7 +1966,7 @@ func expandAccelerators(configured []interface{}) []*dataproc.AcceleratorConfig 
 
 func resourceDataprocClusterUpdate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*transport_tpg.Config)
-	userAgent, err :=  tpgresource.GenerateUserAgentString(d, config.UserAgent)
+	userAgent, err := tpgresource.GenerateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return err
 	}
@@ -2087,7 +2073,7 @@ func resourceDataprocClusterUpdate(d *schema.ResourceData, meta interface{}) err
 
 func resourceDataprocClusterRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*transport_tpg.Config)
-	userAgent, err :=  tpgresource.GenerateUserAgentString(d, config.UserAgent)
+	userAgent, err := tpgresource.GenerateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return err
 	}
@@ -2115,7 +2101,7 @@ func resourceDataprocClusterRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("region", region); err != nil {
 		return fmt.Errorf("Error setting region: %s", err)
 	}
-<% if version == 'private' -%>
+
 	clusterLabels := make(map[string]interface{})
 
 	if v, ok := d.GetOk("labels"); ok {
@@ -2133,11 +2119,6 @@ func resourceDataprocClusterRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("effective_labels", cluster.Labels); err != nil {
 		return fmt.Errorf("Error setting effective_labels: %s", err)
 	}
-<% else -%>
-	if err := d.Set("labels", cluster.Labels); err != nil {
-		return fmt.Errorf("Error setting labels: %s", err)
-	}
-<% end -%>
 
 	var cfg []map[string]interface{}
 	cfg, err = flattenClusterConfig(d, cluster.Config)
@@ -2419,7 +2400,7 @@ func flattenDataprocMetricConfig(d *schema.ResourceData, dmc *dataproc.DataprocM
 	metricsTypeList := schema.NewSet(schema.HashResource(metricsSchema()), []interface{}{}).List()
 	for _, metric := range dmc.Metrics {
 		data := map[string]interface{}{
-			"metric_source":  metric.MetricSource,
+			"metric_source":    metric.MetricSource,
 			"metric_overrides": metric.MetricOverrides,
 		}
 
@@ -2511,16 +2492,16 @@ func flattenGceClusterConfig(d *schema.ResourceData, gcc *dataproc.GceClusterCon
 	if gcc.ReservationAffinity != nil {
 		gceConfig["reservation_affinity"] = []map[string]interface{}{
 			{
-				"consume_reservation_type":    gcc.ReservationAffinity.ConsumeReservationType,
-				"key":                         gcc.ReservationAffinity.Key,
-				"values":                      gcc.ReservationAffinity.Values,
+				"consume_reservation_type": gcc.ReservationAffinity.ConsumeReservationType,
+				"key":                      gcc.ReservationAffinity.Key,
+				"values":                   gcc.ReservationAffinity.Values,
 			},
 		}
 	}
 	if gcc.NodeGroupAffinity != nil {
 		gceConfig["node_group_affinity"] = []map[string]interface{}{
 			{
-				"node_group_uri":    gcc.NodeGroupAffinity.NodeGroupUri,
+				"node_group_uri": gcc.NodeGroupAffinity.NodeGroupUri,
 			},
 		}
 	}
@@ -2596,7 +2577,7 @@ func extractInitTimeout(t string) (int, error) {
 
 func resourceDataprocClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*transport_tpg.Config)
-	userAgent, err :=  tpgresource.GenerateUserAgentString(d, config.UserAgent)
+	userAgent, err := tpgresource.GenerateUserAgentString(d, config.UserAgent)
 	if err != nil {
 		return err
 	}
