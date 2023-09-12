@@ -112,6 +112,16 @@ There are now three label-related fields with the new model:
 
 After upgrading to `5.0.0`, and then running `terraform refresh` or `terraform apply`, these three fields should show in the state file of the resources with a self-applying `labels` field.
 
+### Changes to how default `location`, `region` and `zone` values are obtained for resources
+
+Currently, when configuring resources that require a `location`, `region` or `zone` argument you have the choice of specifying it in the resource block or allowing default values to be used. Default [region](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference#region) or [zone](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference#zone) values can be configured in the provider block or by providing values through environment variables.
+
+Changes in 5.0.0 address inconsistent behaviour when resources chose which default value to use when setting a `location`, `region` or `zone` argument that is not supplied in its resource block:
+* Resources that use default values to set their `location` argument will now use the default `region` value. Previously those resources would derive a region from the default zone set on the provider
+  * Users will need to check for unexpected `location` changes for resources. If an unexpected change is seen, the solution is to explicitly set the `location` value in that resource's configuration block.
+
+
+
 #### Resource annotations
 
 The new annotations model is similar to the new labels model and will be applied to all of the resources with the top level `annotations` field or the nested `annotations` field inside the top level `metadata` field.
