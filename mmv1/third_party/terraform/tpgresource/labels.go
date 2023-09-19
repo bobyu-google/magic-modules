@@ -3,6 +3,8 @@ package tpgresource
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	transport_tpg "github.com/hashicorp/terraform-provider-google/google/transport"
@@ -110,4 +112,38 @@ func SetMetadataLabelsDiff(_ context.Context, d *schema.ResourceDiff, meta inter
 	}
 
 	return nil
+}
+
+func LabelsStateUpgrade(rawState map[string]interface{}, labesPrefix string) (map[string]interface{}, error) {
+	log.Printf("[DEBUG] Attributes before migration: %#v", rawState)
+	log.Printf("[DEBUG] Attributes before migration labels: %#v", rawState["labels"])
+	log.Printf("[DEBUG] Attributes before migration terraform_labels: %#v", rawState["terraform_labels"])
+	log.Printf("[DEBUG] Attributes before migration effective_labels: %#v", rawState["effective_labels"])
+
+	if rawState["labels"] != nil {
+		rawLabels := rawState["labels"].(map[string]interface{})
+		labels := make(map[string]interface{})
+		terraformLabels := make(map[string]interface{})
+		effectiveLabels := make(map[string]interface{})
+
+		for k, v := range rawLabels {
+			effectiveLabels[k] = v
+
+			if !strings.HasPrefix(k, labesPrefix) {
+				labels[k] = v
+				terraformLabels[k] = v
+			}
+		}
+
+		rawState["labels"] = labels
+		rawState["terraform_labels"] = terraformLabels
+		rawState["effective_labels"] = effectiveLabels
+	}
+
+	log.Printf("[DEBUG] Attributes after migration: %#v", rawState)
+	log.Printf("[DEBUG] Attributes after migration labels: %#v", rawState["labels"])
+	log.Printf("[DEBUG] Attributes after migration terraform_labels: %#v", rawState["terraform_labels"])
+	log.Printf("[DEBUG] Attributes after migration effective_labels: %#v", rawState["effective_labels"])
+
+	return rawState, nil
 }

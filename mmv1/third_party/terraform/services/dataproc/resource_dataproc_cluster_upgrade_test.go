@@ -1,4 +1,4 @@
-package dataproc
+package dataproc_test
 
 import (
 	"testing"
@@ -6,14 +6,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"google.golang.org/api/dataproc/v1"
+
+	"github.com/hashicorp/terraform-provider-google/google/acctest"
 )
 
 // Tests schema version migration by creating a cluster with an old version of the provider (4.65.0)
 // and then updating it with the current version the provider.
 func TestAccDataprocClusterLabelsMigration_withoutLabels_withoutChanges(t *testing.T) {
+	acctest.SkipIfVcr(t)
 	t.Parallel()
 
-	rnd := RandString(t, 10)
+	rnd := acctest.RandString(t, 10)
 	var cluster dataproc.Cluster
 	oldVersion := map[string]resource.ExternalProvider{
 		"google": {
@@ -22,8 +25,8 @@ func TestAccDataprocClusterLabelsMigration_withoutLabels_withoutChanges(t *testi
 		},
 	}
 
-	VcrTest(t, resource.TestCase{
-		PreCheck:     func() { AccTestPreCheck(t) },
+	acctest.VcrTest(t, resource.TestCase{
+		PreCheck:     func() { acctest.AccTestPreCheck(t) },
 		CheckDestroy: testAccCheckDataprocClusterDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -32,7 +35,7 @@ func TestAccDataprocClusterLabelsMigration_withoutLabels_withoutChanges(t *testi
 			},
 			{
 				Config:                   testAccDataprocCluster_withoutLabels(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
@@ -43,7 +46,7 @@ func TestAccDataprocClusterLabelsMigration_withoutLabels_withoutChanges(t *testi
 			},
 			{
 				Config:                   testAccDataprocCluster_withLabels(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
@@ -59,9 +62,10 @@ func TestAccDataprocClusterLabelsMigration_withoutLabels_withoutChanges(t *testi
 }
 
 func TestAccDataprocClusterLabelsMigration_withLabels_withoutChanges(t *testing.T) {
+	acctest.SkipIfVcr(t)
 	t.Parallel()
 
-	rnd := RandString(t, 10)
+	rnd := acctest.RandString(t, 10)
 	var cluster dataproc.Cluster
 	oldVersion := map[string]resource.ExternalProvider{
 		"google": {
@@ -70,8 +74,8 @@ func TestAccDataprocClusterLabelsMigration_withLabels_withoutChanges(t *testing.
 		},
 	}
 
-	VcrTest(t, resource.TestCase{
-		PreCheck:     func() { AccTestPreCheck(t) },
+	acctest.VcrTest(t, resource.TestCase{
+		PreCheck:     func() { acctest.AccTestPreCheck(t) },
 		CheckDestroy: testAccCheckDataprocClusterDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -80,7 +84,7 @@ func TestAccDataprocClusterLabelsMigration_withLabels_withoutChanges(t *testing.
 			},
 			{
 				Config:                   testAccDataprocCluster_withLabels(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
@@ -93,11 +97,11 @@ func TestAccDataprocClusterLabelsMigration_withLabels_withoutChanges(t *testing.
 			},
 			{
 				Config:                   testAccDataprocCluster_withLabelsUpdate(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
-					// We only provide two, so expect 2.
+					// We only provide one, so expect 1.
 					resource.TestCheckResourceAttr("google_dataproc_cluster.with_labels", "labels.%", "1"),
 					resource.TestCheckResourceAttr("google_dataproc_cluster.with_labels", "labels.key2", "value2"),
 					// We only provide one, but GCP adds three and goog-dataproc-autozone is added internally, so expect 5.
@@ -110,9 +114,10 @@ func TestAccDataprocClusterLabelsMigration_withLabels_withoutChanges(t *testing.
 }
 
 func TestAccDataprocClusterLabelsMigration_withUpdate(t *testing.T) {
+	acctest.SkipIfVcr(t)
 	t.Parallel()
 
-	rnd := RandString(t, 10)
+	rnd := acctest.RandString(t, 10)
 	var cluster dataproc.Cluster
 	oldVersion := map[string]resource.ExternalProvider{
 		"google": {
@@ -121,8 +126,8 @@ func TestAccDataprocClusterLabelsMigration_withUpdate(t *testing.T) {
 		},
 	}
 
-	VcrTest(t, resource.TestCase{
-		PreCheck:     func() { AccTestPreCheck(t) },
+	acctest.VcrTest(t, resource.TestCase{
+		PreCheck:     func() { acctest.AccTestPreCheck(t) },
 		CheckDestroy: testAccCheckDataprocClusterDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -131,7 +136,7 @@ func TestAccDataprocClusterLabelsMigration_withUpdate(t *testing.T) {
 			},
 			{
 				Config:                   testAccDataprocCluster_withLabels(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
@@ -144,7 +149,7 @@ func TestAccDataprocClusterLabelsMigration_withUpdate(t *testing.T) {
 			},
 			{
 				Config:                   testAccDataprocCluster_withoutLabels(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
@@ -158,9 +163,10 @@ func TestAccDataprocClusterLabelsMigration_withUpdate(t *testing.T) {
 }
 
 func TestAccDataprocClusterLabelsMigration_withRemoval(t *testing.T) {
+	acctest.SkipIfVcr(t)
 	t.Parallel()
 
-	rnd := RandString(t, 10)
+	rnd := acctest.RandString(t, 10)
 	var cluster dataproc.Cluster
 	oldVersion := map[string]resource.ExternalProvider{
 		"google": {
@@ -169,8 +175,8 @@ func TestAccDataprocClusterLabelsMigration_withRemoval(t *testing.T) {
 		},
 	}
 
-	VcrTest(t, resource.TestCase{
-		PreCheck:     func() { AccTestPreCheck(t) },
+	acctest.VcrTest(t, resource.TestCase{
+		PreCheck:     func() { acctest.AccTestPreCheck(t) },
 		CheckDestroy: testAccCheckDataprocClusterDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -179,7 +185,7 @@ func TestAccDataprocClusterLabelsMigration_withRemoval(t *testing.T) {
 			},
 			{
 				Config:                   testAccDataprocCluster_withoutLabels(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
@@ -190,7 +196,7 @@ func TestAccDataprocClusterLabelsMigration_withRemoval(t *testing.T) {
 			},
 			{
 				Config:                   testAccDataprocCluster_withLabels(rnd),
-				ProtoV5ProviderFactories: ProtoV5ProviderFactories(t),
+				ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataprocClusterExists(t, "google_dataproc_cluster.with_labels", &cluster),
 
